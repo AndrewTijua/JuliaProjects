@@ -53,7 +53,7 @@ xlims!(-ax_lim, ax_lim)
 ylims!(-ax_lim, ax_lim)
 zlims!(-ax_lim, ax_lim)
 
-plot_every = 1
+plot_every = 10
 
 for n = 1:n_bodies
     pa = pos_array[:, n]
