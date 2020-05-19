@@ -24,11 +24,11 @@ using DelimitedFiles
 #     ts_X[i, :] = collect(Iterators.flatten(test_X[:, :, i]))
 # end
 
-tr = readdlm("ml/src/data/optdigitstra.csv", ',')
+tr = readdlm("ml/data/optdigitstra.csv", ',')
 tr_X = tr[:,1:64]
 tr_y = tr[:,65]
 
-ts = readdlm("ml/src/data/optdigitstes.csv", ',')
+ts = readdlm("ml/data/optdigitstes.csv", ',')
 ts_X = ts[:,1:64]
 ts_y = ts[:,65]
 
