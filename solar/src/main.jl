@@ -9,7 +9,7 @@ G = 6.67730e-11
 G_km = G / (1e3)^3
 
 
-bodies_list = read_bodies("bodies.csv", timestep)
+bodies_list = read_bodies("solar/src/bodies.csv", timestep)
 momentum_removal!(bodies_list)
 
 target_time = 36500 * timestep * 2
