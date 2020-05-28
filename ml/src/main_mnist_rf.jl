@@ -8,24 +8,27 @@ using MLDatasets
 train_X, tr_y = MNIST.traindata(Float64)
 test_X, ts_y = MNIST.testdata(Float64)
 
-tr_X = Array{Float64,2}(
-    undef,
-    size(train_X, 3),
-    size(train_X, 1) * size(train_X, 2),
-)
-for i = 1:size(train_X, 3)
-    tr_X[i, :] = collect(Iterators.flatten(train_X[:, :, i]))
-end
+tr_X = matrix_array_to_long_list(train_X)
+ts_X = matrix_array_to_long_list(test_X)
 
-ts_X =
-    Array{Float64,2}(undef, size(test_X, 3), size(test_X, 1) * size(test_X, 2))
-for i = 1:size(test_X, 3)
-    ts_X[i, :] = collect(Iterators.flatten(test_X[:, :, i]))
-end
+# tr_X = Array{Float64,2}(
+#     undef,
+#     size(train_X, 3),
+#     size(train_X, 1) * size(train_X, 2),
+# )
+# for i = 1:size(train_X, 3)
+#     tr_X[i, :] = collect(Iterators.flatten(train_X[:, :, i]))
+# end
+#
+# ts_X =
+#     Array{Float64,2}(undef, size(test_X, 3), size(test_X, 1) * size(test_X, 2))
+# for i = 1:size(test_X, 3)
+#     ts_X[i, :] = collect(Iterators.flatten(test_X[:, :, i]))
+# end
 
-#lm = tr_X
+# lm = tr_X_33
 # open("ml/data/opdig_lrg_tr.csv", "w") do io
-#     writedlm(io, lm[1:100, :], ',')
+#     writedlm(io, lm[1:50, :], ',')
 # end
 
 function get_block_indices_long(cornerindices::Array{Int64,2}, dims::Array{Int64,1})

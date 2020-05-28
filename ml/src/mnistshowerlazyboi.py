@@ -13,9 +13,9 @@ data = np.loadtxt(open("F:/julia/projects/ml/data/opdig_lrg_tr.csv", "rb"), deli
 #img = data[:,0:64]
 img = data[:,:]
 
-imgind = 87
+imgind = 1
 
 tpimg = np.array(img[imgind])
 # tpimg = np.reshape(tpimg, (8, 8))
-tpimg = np.reshape(tpimg, (14, 14))
+tpimg = np.reshape(tpimg, (9, 9))
 plt.imshow(tpimg, cmap = 'Greys')
