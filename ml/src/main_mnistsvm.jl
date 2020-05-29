@@ -27,7 +27,8 @@ ts_X = matrix_array_to_long_list(test_X)
 # ts_X = ts[:, 1:64]
 # ts_y = ts[:, 65]
 
-tr_sz = 50000
+#tr_sz = 60000
+tr_sz = 1000
 ts_sz = 10000
 
 
