@@ -14,7 +14,7 @@ test_X, ts_y = MNIST.testdata(Float64)
 ts_X = matrix_array_to_long_list(test_X)
 
 
-#lm = tr_X
+#lm = tr_X\
 # open("ml/data/opdig_lrg_tr.csv", "w") do io
 #     writedlm(io, lm[1:100, :], ',')
 # end

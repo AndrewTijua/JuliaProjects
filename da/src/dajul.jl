@@ -124,6 +124,14 @@ x' = y
 y' = x'' = -g/l sin(x)
 =#
 
+# function pendulum_sys(x)
+#     a = x[1]
+#     b = x[2]
+#     tr_mat = [1 0; 0 1]
+#     aff = [b; -sin(a)]
+#     return (aff)
+# end
+
 function pendulum_sys(x)
     a = x[1]
     b = x[2]
@@ -232,18 +240,18 @@ H = [1 0]
 ξ = [0; pi / 4]
 
 #error covariance of initial condition
-Π = [0.001 0; 0 1]
+Π = [1 0; 0 1]
 
 #error covariance of observations
 r = 0.05
 R = r * Matrix(I, m, m)
 
-dt_obs = 1.
+dt_obs = 0.2
 t = collect(1.:dt_obs:10.)
 obs = [v[1] for (u, v) in tuples(soln(t))]
 n_obs = obs + (sqrt(r) * randn(length(obs)))
 
-ℳ = PendulumModel(0.01, 1, 1)
+ℳ = PendulumModel(0.1, 1, 1)
 
 x = zeros(2, 1000)
 x[:,1] = ξ
@@ -256,13 +264,27 @@ steps = floor(Int64, tspan[2] / ℳ.dt)
 o_arr = reshape(n_obs, 1, :)
 
 
-xmmxm, = fourDVar(ξ, Π, ℳ, o_arr, R, H, steps, t)
+xmmxm, xmm = fourDVar(ξ, Π, ℳ, o_arr, R, H, steps, t)
 Q = zeros(size(Π))
-xaaxa, = FreeRun(ℳ, xmmxm, Q, H, steps, t)
+xaaxa, xmm = FreeRun(ℳ, xmmxm, Q, H, steps, t)
 
 time = collect(0:0.01:10)
 soln_time = [v[1] for (u, v) in tuples(soln(time))]
 
-plot(time, xaaxa[1,:], label = "4DVar")
+assim_time = collect(0.:0.1:10.)
+
+plot(assim_time, xaaxa[1,:], label = "4DVar")
 plot!(t, n_obs, label = "Observations")
 plot!(time, soln_time, label = "Ground Truth")
+
+nmax = 100
+
+no = 5:1:nmax
+xt,xfree,xa,yt,yo,diag_ = TwinExperiment(ℳ,ξ,Π,Q,R,H,steps,no,"4DVar")
+
+time_1 = 1:nmax+1
+
+plot(time_1, xt[1,:], label = "Truth")
+plot!(time_1, xfree[1,:], label = "Free")
+plot!(time_1, xa[1,:], label = "4DVar")
+plot!(time_1[no], yo[1,:], label = "Observation")
