@@ -71,6 +71,6 @@ end
 
 pos_plot
 
-plot(sysenergy[1:plot_every:n_steps])
-#xlims!(0, n_steps)
-ylims!(minimum(sysenergy)/1.001, maximum(sysenergy)*1.001)
+# plot(sysenergy[1:plot_every:n_steps])
+# #xlims!(0, n_steps)
+# ylims!(minimum(sysenergy)/1.001, maximum(sysenergy)*1.001)
