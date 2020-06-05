@@ -86,16 +86,16 @@ ord_approx = 4
 v = 1.0
 
 u0 = 0 .* knots
-up0 = -abs.(-2.0 .* knots .+ 1.) .+ 1.
+up0 = -abs.(-2.0 .* knots .+ 1.0) .+ 1.0
 
 Δ = CenteredDifference(ord_deriv, ord_approx, h, nknots)
 bc = Dirichlet0BC(Float64)
 
 function step_w(du, u, p, t)
-    a = u[:,1]
-    da = u[:,2]
-    du[:,1] = da
-    du[:,2] = (1.0^2) * Δ * bc * a
+    a = u[:, 1]
+    da = u[:, 2]
+    du[:, 1] = da
+    du[:, 2] = (1.0^2) * Δ * bc * a
 end
 
 
@@ -107,17 +107,17 @@ plot(sol)
 tsol = collect(t0:((t1-t0)/2000):t1)
 
 S_array = Array(sol(tsol))
-P_t = S_array[50,1,:]
+P_t = S_array[50, 1, :]
 
 
 
 function fcn(n::Int64)
-    return (8.0 / (n*π)^2 * sin(n * π / 2))
+    return (8.0 / (n * π)^2 * sin(n * π / 2))
 end
 
 function f_decon(x::Float64, t::Float64, n::Int64 = 10)
-    sm::Float64 = 0.
-    for i in 1:n
+    sm::Float64 = 0.0
+    for i = 1:n
         cn::Float64 = fcn(i)
         sm += (i * π)^(-1) * cn * sin(i * π * x) * sin(i * π * t)
     end
@@ -131,7 +131,7 @@ plot!(tsol, f_decon.(knots[50], tsol, 15))
 plot_t = collect(0:0.1:5)
 
 p_array = Array(sol(plot_t))
-sp_t = p_array[:,1,:]
+sp_t = p_array[:, 1, :]
 
 
 
@@ -153,7 +153,7 @@ plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colo
 t0 = 0.0
 t1 = 10.0
 
-l = 5.
+l = 5.0
 
 nknots = 250
 h = 2l / (nknots + 1)
@@ -175,10 +175,10 @@ up0 = sinc.(knots)
 u0 = 0 .* knots
 
 function step_kg(du, u, p, t)
-    a = u[:,1]
-    da = u[:,2]
-    du[:,1] = da
-    du[:,2] = (Δ * bc * a - m^2 * a)
+    a = u[:, 1]
+    da = u[:, 2]
+    du[:, 1] = da
+    du[:, 2] = (Δ * bc * a - m^2 * a)
 end
 
 
@@ -190,12 +190,23 @@ sol = solve(prob, alg)
 plot_t = collect(t0:((t1-t0)/200):t1)
 
 p_array = Array(sol(plot_t))
-sp_t = p_array[:,1,:]
+sp_t = p_array[:, 1, :]
 
 xs = collect(knots)
 ts = plot_t
 zs = sp_t
 
-plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30], title = "Klein-Gordon (relativistic wave eqⁿ)", size = (1000, 1000))
-
+plot(
+    xs,
+    ts,
+    zs',
+    st = :surface,
+    xlabel = "X",
+    ylabel = "t",
+    zlabel = "Δ",
+    colorbar = false,
+    camera = [75, 30],
+    title = "Klein-Gordon (relativistic wave eqⁿ)",
+    size = (1000, 1000),
+)
 ####
