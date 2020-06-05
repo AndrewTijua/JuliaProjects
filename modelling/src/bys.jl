@@ -196,5 +196,6 @@ xs = collect(knots)
 ts = plot_t
 zs = sp_t
 
-plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30], title = "Klein-Gordon (relativistic wave eqⁿ)")
+plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30], title = "Klein-Gordon (relativistic wave eqⁿ)", size = (1000, 1000))
+
 ####
