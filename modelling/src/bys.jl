@@ -181,7 +181,7 @@ end
 
 
 prob = ODEProblem(step_kg, hcat(u0, up0), (t0, t1))
-alg = Rosenbrock23()
+alg = Tsit5()
 sol = solve(prob, alg)
 #plot(sol)
 
