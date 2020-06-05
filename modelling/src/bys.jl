@@ -21,7 +21,8 @@ use trapezoid or similar
 =#
 
 #heat equation
-
+#u₀(x) = sin(2πx)
+#dirichlet 0 boundaries
 u_analytic(x, t) = sin(2 * π * x) * exp(-t * (2 * π)^2)
 
 nknots = 100
@@ -34,7 +35,7 @@ ord_approx = 2
 bc = Dirichlet0BC(Float64)
 
 t0 = 0.0
-t1 = 0.3
+t1 = 0.07
 u0 = u_analytic.(knots, t0)
 
 step_he(u, p, t) = Δ * bc * u
@@ -42,7 +43,28 @@ prob = ODEProblem(step_he, u0, (t0, t1))
 alg = KenCarp4()
 sol = solve(prob, alg)
 
-plot(sol)
+plot_t = collect(t0:((t1-t0)/200):t1)
+
+p_array = Array(sol(plot_t))
+sp_t = p_array[:, :]
+
+xs = collect(knots)
+ts = plot_t
+zs = sp_t
+
+plot(
+    xs,
+    ts,
+    zs',
+    st = :surface,
+    xlabel = "X",
+    ylabel = "t",
+    zlabel = "Δ",
+    colorbar = false,
+    camera = [75, 30],
+    title = "Heat Eqⁿ w/ sinusoid init)",
+    size = (1000, 1000),
+)
 
 using Test
 @test u_analytic.(knots, t1) ≈ sol[end] atol = 1e-3
@@ -104,7 +126,7 @@ alg = Trapezoid()
 sol = solve(prob, alg)
 plot(sol)
 
-tsol = collect(t0:((t1-t0)/2000):t1)
+tsol = collect(t0:((t1-t0)/200):t1)
 
 S_array = Array(sol(tsol))
 P_t = S_array[50, 1, :]
@@ -128,7 +150,7 @@ end
 plot(tsol, P_t)
 plot!(tsol, f_decon.(knots[50], tsol, 15))
 
-plot_t = collect(0:0.1:5)
+plot_t = collect(0:0.05:5)
 
 p_array = Array(sol(plot_t))
 sp_t = p_array[:, 1, :]
