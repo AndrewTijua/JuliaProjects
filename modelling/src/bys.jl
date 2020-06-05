@@ -63,8 +63,8 @@ ord_approx = 2
 Δ = CenteredDifference(ord_deriv, ord_approx, h, nknots)
 bc = DirichletBC(a, b)
 
-display(Array(Δ))
-display(bc * zeros(nknots))
+# display(Array(Δ))
+# display(bc * zeros(nknots))
 
 u = (Δ * bc) \ fill(f, nknots)
 knots = collect(range(h, step = h, length = nknots))
@@ -145,3 +145,53 @@ plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colo
 #okay deffo incorrect
 #i dont think this is correct but it sure looks pretty
 ####
+#klein gordon pde
+
+#1/c² * ∂ₜₜu - ∂ₓₓu + μ²u = 0
+# ∂ₜₜu = c²(∂ₓₓu - μ²u)
+
+t0 = 0.0
+t1 = 10.0
+
+nknots = 250
+h = 2.0 / (nknots + 1)
+knots = collect(range(-1., step = h, length = nknots))
+ord_deriv = 2
+ord_approx = 4
+
+#c = 3e8
+#μ = (9.11e-31 * c) / (1.0545718e-34)
+# c = 10.0
+# μ = 100.0
+
+mₚ = 2.176435e-8
+m = 1.67262192369e-27 / mₚ
+Δ = CenteredDifference(ord_deriv, ord_approx, h, nknots)
+bc = Dirichlet0BC(Float64)
+
+up0 = sinc.(knots)
+u0 = 0 .* knots
+
+function step_kg(du, u, p, t)
+    a = u[:,1]
+    da = u[:,2]
+    du[:,1] = da
+    du[:,2] = (Δ * bc * a - m^2 * a)
+end
+
+
+prob = ODEProblem(step_kg, hcat(u0, up0), (t0, t1))
+alg = Rosenbrock23()
+sol = solve(prob, alg)
+#plot(sol)
+
+plot_t = collect(t0:0.1:t1)
+
+p_array = Array(sol(plot_t))
+sp_t = p_array[:,1,:]
+
+xs = collect(knots)
+ts = plot_t
+zs = sp_t
+
+plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30])
