@@ -153,9 +153,11 @@ plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colo
 t0 = 0.0
 t1 = 10.0
 
+l = 5.
+
 nknots = 250
-h = 2.0 / (nknots + 1)
-knots = collect(range(-1., step = h, length = nknots))
+h = 2l / (nknots + 1)
+knots = collect(range(-l, step = h, length = nknots))
 ord_deriv = 2
 ord_approx = 4
 
@@ -181,11 +183,11 @@ end
 
 
 prob = ODEProblem(step_kg, hcat(u0, up0), (t0, t1))
-alg = Tsit5()
+alg = Trapezoid()
 sol = solve(prob, alg)
 #plot(sol)
 
-plot_t = collect(t0:0.1:t1)
+plot_t = collect(t0:((t1-t0)/200):t1)
 
 p_array = Array(sol(plot_t))
 sp_t = p_array[:,1,:]
@@ -194,4 +196,5 @@ xs = collect(knots)
 ts = plot_t
 zs = sp_t
 
-plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30])
+plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30], title = "Klein-Gordon (relativistic wave eqⁿ)")
+####
