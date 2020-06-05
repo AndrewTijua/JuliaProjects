@@ -8,12 +8,16 @@ using Distributions
 
 using Plots
 plotlyjs()
-
-using StatsPlots
+#using PlotlyJS
+# using ORCA
+#
+# using StatsPlots
 #=
-In which we numerically solve pdes using discrete approximations to derivatives and inserting the resulting (system of) odes into
-julias ode solvers. note that pdes generally give stiff systems of odes, and often need energy preservation (esp if oscillatory),
-so the choice of solver is critical
+In which we numerically solve pdes using discrete approximations to partial derivatives and inserting the resulting (system of)
+odes into julias ode solvers. note that pdes generally give stiff systems of odes, and often need energy preservation (esp if oscillatory),
+so the choice of solver is critical. KenCarp4 works well for single derived systems and over (relatively) short timespans,
+but trapezoid works better for oscillatory pdes resulting from coupled systems (ie 2nd order pdes). check eigenvalues, if complex are present
+use trapezoid or similar
 =#
 
 #heat equation
@@ -30,7 +34,7 @@ ord_approx = 2
 bc = Dirichlet0BC(Float64)
 
 t0 = 0.0
-t1 = 0.03
+t1 = 0.3
 u0 = u_analytic.(knots, t0)
 
 step_he(u, p, t) = Δ * bc * u
@@ -41,7 +45,7 @@ sol = solve(prob, alg)
 plot(sol)
 
 using Test
-@test u_analytic.(knots, t1) ≈ sol[end] rtol = 1e-3
+@test u_analytic.(knots, t1) ≈ sol[end] atol = 1e-3
 ####
 #poisson equation
 
@@ -120,11 +124,24 @@ function f_decon(x::Float64, t::Float64, n::Int64 = 10)
     return sm
 end
 
-f_decon(knots[1], 5., 10)
+#f_decon(knots[1], 5., 10)
 plot(tsol, P_t)
 plot!(tsol, f_decon.(knots[50], tsol, 15))
 
-#it works now. yay.
+plot_t = collect(0:0.1:5)
+
+p_array = Array(sol(plot_t))
+sp_t = p_array[:,1,:]
+
+
+
+xs = collect(knots)
+ts = plot_t
+zs = sp_t
+
+plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colorbar = false, camera = [75, 30])
+#Plots.savefig("wave_eqn_uisoln.png")
+#it works now. yay. (read bottom to top its like twitter)
 #okay deffo incorrect
 #i dont think this is correct but it sure looks pretty
 ####

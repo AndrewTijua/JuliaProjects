@@ -12,4 +12,3 @@ p = [10.0, 28.0, 8 / 3]
 prob = ODEProblem(lorenz, u0, tspan, p)
 sol = solve(prob)
 plot(sol, vars = (1, 2, 3), legend = :none)
-plot(sol, vars = (1, 2), legend = :none)
