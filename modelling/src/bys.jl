@@ -25,7 +25,7 @@ use trapezoid or similar
 #dirichlet 0 boundaries
 u_analytic(x, t) = sin(2 * π * x) * exp(-t * (2 * π)^2)
 
-nknots = 100
+nknots = 130
 h = 1.0 / (nknots + 1)
 knots = collect(range(h, step = h, length = nknots))
 ord_deriv = 2
@@ -35,7 +35,7 @@ ord_approx = 2
 bc = Dirichlet0BC(Float64)
 
 t0 = 0.0
-t1 = 0.07
+t1 = 0.03
 u0 = u_analytic.(knots, t0)
 
 step_he(u, p, t) = Δ * bc * u
@@ -62,12 +62,12 @@ plot(
     zlabel = "Δ",
     colorbar = false,
     camera = [75, 30],
-    title = "Heat Eqⁿ w/ sinusoid init)",
-    size = (1000, 1000),
+    title = "Heat Eqⁿ w/ sinusoid init",
+    #size = (1000, 1000),
 )
 
 using Test
-@test u_analytic.(knots, t1) ≈ sol[end] atol = 1e-3
+@test u_analytic.(knots, t1) ≈ sol[end] rtol = 1e-3
 ####
 #poisson equation
 
@@ -173,13 +173,13 @@ plot(xs, ts, zs', st = :surface, xlabel = "X", ylabel = "t", zlabel = "Δ", colo
 # ∂ₜₜu = c²(∂ₓₓu - μ²u)
 
 t0 = 0.0
-t1 = 10.0
+t1 = 20.0
 
 l = 5.0
 
 nknots = 250
-h = 2l / (nknots + 1)
-knots = collect(range(-l, step = h, length = nknots))
+h = 2l / (nknots+1)
+knots = collect(range(-l+h, step = h, length = nknots))
 ord_deriv = 2
 ord_approx = 4
 
@@ -193,8 +193,8 @@ m = 1.67262192369e-27 / mₚ
 Δ = CenteredDifference(ord_deriv, ord_approx, h, nknots)
 bc = Dirichlet0BC(Float64)
 
-up0 = sinc.(knots)
-u0 = 0 .* knots
+u0 = sinc.(knots)
+up0 = 0 .* knots
 
 function step_kg(du, u, p, t)
     a = u[:, 1]
@@ -205,7 +205,7 @@ end
 
 
 prob = ODEProblem(step_kg, hcat(u0, up0), (t0, t1))
-alg = Trapezoid()
+alg = Rosenbrock23()
 sol = solve(prob, alg)
 #plot(sol)
 
@@ -231,4 +231,15 @@ plot(
     title = "Klein-Gordon (relativistic wave eqⁿ)",
     size = (1000, 1000),
 )
+# gr()
+# using Interact
+# g = @animate for t = plot_t
+#     p_array = Array(sol(t))
+#     sp_t = p_array[:, 1]
+#
+#     xs = collect(knots)
+#     zs = sp_t
+#     plot(xs, zs, xlabel = "X", ylabel = "Δ", title = "K-G Relativistic Wave Eqⁿ", size = (1000, 1000), xlims = (-5, 5), ylims = (-1., 1.), legend = :none)
+# end
+#plotlyjs()
 ####
