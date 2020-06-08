@@ -245,14 +245,14 @@ plot(
 ####
 #md heat eqn
 
-l = 1.0
-nx, ny = (5, 5)
+l = 2.0
+nx, ny = (25, 25)
 hx, hy = 2l ./ ((nx, ny) .+ 1)
 
 xknots = collect(range(-l + hx, step = hx, length = nx))
 yknots = collect(range(-l + hy, step = hy, length = ny))
 
-u0 = 1.0 * sin.(xknots * yknots')
+u0 = 1.0 * exp.(-xknots.^2  .-yknots'.^2)
 
 Qx, Qy = MultiDimBC(Dirichlet0BC(Float64), size(u0))
 
