@@ -178,8 +178,8 @@ t1 = 20.0
 l = 5.0
 
 nknots = 250
-h = 2l / (nknots+1)
-knots = collect(range(-l+h, step = h, length = nknots))
+h = 2l / (nknots + 1)
+knots = collect(range(-l + h, step = h, length = nknots))
 ord_deriv = 2
 ord_approx = 4
 
@@ -243,3 +243,31 @@ plot(
 # end
 #plotlyjs()
 ####
+#md heat eqn
+
+l = 1.0
+nx, ny = (5, 5)
+hx, hy = 2l ./ ((nx, ny) .+ 1)
+
+xknots = collect(range(-l + hx, step = hx, length = nx))
+yknots = collect(range(-l + hy, step = hy, length = ny))
+
+u0 = 1.0 * sin.(xknots * yknots')
+
+Qx, Qy = MultiDimBC(Dirichlet0BC(Float64), size(u0))
+
+Dxx = CenteredDifference{1}(2, 2, hx, nx)
+Dyy = CenteredDifference{2}(2, 2, hy, ny)
+
+t0 = 0.0
+t1 = 5.0
+
+bc = compose(Qx, Qy)
+D = Dxx + Dyy
+
+
+step_2d_he_il(u, p, t) = D * bc * u
+
+prob = ODEProblem(step_2d_he_il, u0, (t0, t1))
+alg = Rosenbrock23()
+sol = solve(prob, alg)
