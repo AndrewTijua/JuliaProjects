@@ -3,7 +3,7 @@ using LightGraphs
 using LinearAlgebra
 using DataFrames
 using Plots;
-plotlyjs();
+gr();
 using DrWatson: @dict
 using Random
 using Distributions: Poisson, DiscreteNonParametric, Exponential, Gamma, truncated, Normal, Binomial
@@ -12,8 +12,8 @@ mutable struct indiv <: AbstractAgent
     id::Int64
     pos::Int64
     age::Int8
-    days_exposed_cd::Int8
-    days_infected::Int8
+    days_exposed_cd::UInt16
+    days_infected::UInt16
     status::Symbol #1:S, 2:E, 3:I, 4:R
     will_iso::Bool
     iso::Bool #true if isolating
@@ -37,7 +37,7 @@ function model_initialisation(;
     seed = 0,
     a_age = 40 * (40 / 30^2),
     b_age = 40 / 30^2,
-    iso_prob,
+    iso_prob = 1.0,
 )
 
     Random.seed!(seed)
@@ -57,7 +57,7 @@ function model_initialisation(;
         m_rates[c, :] ./= m_rates_sum[c]
     end
 
-    properties = @dict(Ns, Is, β_und, β_det, Λ, infection_period, reinfection_prob, detection_time, death_med, death_gr, death_mv, C)
+    properties = @dict(Ns, Is, β_und, β_det, Λ, infection_period, reinfection_prob, detection_time, death_med, death_gr, death_mv, C, m_rates)
 
     age_dist = truncated(Gamma(a_age, 1 / b_age), 0, 100)
 
@@ -89,12 +89,14 @@ function model_initialisation(;
     return model
 end
 
-function generate_cities_params(;C::Int64, max_travel_rate::Float64, pop_params = [3e2, (1e2)])
-    pop_dist = truncated(Normal(pop_params[1], pop_params[2]), 1_00, Inf)
+function generate_cities_params(;C::Int64, max_travel_rate::Float64, citynum::Int64, citymult = 5)
+    pop_dist = 500:5000
     Ns = floor.(Int64, rand(pop_dist, C))
-    β_und = rand(0.3:0.02:0.6, C)
+    for c in 1:citynum
+        Ns[end-c] = citymult * rand(1000:5000)
+    end
+    β_und = rand(0.3:0.04:1.2, C)
     β_det = β_und ./ 10
-
     m_rates = zeros(C, C)
     for c1 = 1:C
         for c2 = 1:C
@@ -115,7 +117,7 @@ function generate_cities_params(;C::Int64, max_travel_rate::Float64, pop_params 
     return city_params
 end
 
-c_params = generate_cities_params(C = 8, max_travel_rate = 0.01)
+c_params = generate_cities_params(C = 5, max_travel_rate = 0.01, citynum = 1, citymult = 3)
 
 Ns = c_params[:Ns]
 C = c_params[:C]
@@ -124,16 +126,16 @@ C = c_params[:C]
 m_rates = c_params[:m_rates]
 Λ = 1 / 14 #exponential parameter for incubation
 infection_period = 14
-reinfection_prob = 0.02
+reinfection_prob = 1e-4
 detection_time = 7
 death_med = 75
 death_gr = 0.2
 death_mv = 0.98
-seed = 0
+seed = 1
 a_age = 40 * (40 / 30^2)
 b_age = 40 / 30^2
 Is = [zeros(Int64, length(Ns) - 1)..., 100]
-iso_prob = 0.0
+iso_prob = 0.8
 
 params = @dict(
 Ns,
@@ -169,10 +171,10 @@ for node in 1:nv(g)
 end
 edgewidthsf(s, d, w) = edgewidthsdict[(s, d)] * 250
 plotargs = merge(plotargs, (edgewidth = edgewidthsf,))
-infected_fraction(x) = cgrad(:inferno)[count(a.status == :I for a in x) / length(x)]
+infected_fraction(x) = cgrad(:inferno)[(count(a.status != :S for a in x) / length(x))]
 plotabm(model; ac = infected_fraction, plotargs...)
 
-function agent_step(agent, model)
+function agent_step!(agent, model)
     isolate!(agent, model)
     migrate!(agent, model)
     transmit!(agent, model)
@@ -180,6 +182,11 @@ function agent_step(agent, model)
     recover_or_die!(agent, model)
 end
 
+function isolate!(agent, model)
+    if agent.will_iso && agent.status == :I
+        agent.iso = true
+    end
+end
 
 function migrate!(agent, model)
     agent.iso && return
@@ -190,3 +197,91 @@ function migrate!(agent, model)
         move_agent!(agent, m, model)
     end
 end
+
+function transmit!(agent, model)
+    if agent.status in (:S, :E, :R)
+        return
+    end
+
+    if agent.iso
+        return
+    end
+
+    rate = if agent.days_infected < model.detection_time
+        model.β_und[agent.pos]
+    else
+        model.β_det[agent.pos]
+    end
+
+    d = Poisson(rate)
+    n = rand(d)
+    n == 0 && return
+
+    for contactID in get_node_contents(agent, model)
+        contact = model[contactID]
+        if (contact.status == :S || (contact.status == :R && rand() <= model.reinfection_prob)) && !contact.iso
+            contact.status = :E
+            n -= 1
+            n == 0 && return
+        end
+    end
+end
+
+function update!(agent, model)
+    if agent.status == :I
+        agent.days_infected += 1
+        agent.days_exposed_cd += 1
+    elseif agent.status == :E
+        agent.days_exposed_cd += 1
+        if (rand() <= model.Λ)
+            agent.status = :I
+        end
+    end
+end
+
+logit(x, x₀, k, L) = L / (1+exp(-k * (x - x₀)))
+
+function recover_or_die!(agent, model)
+    lgx = logit(agent.age, model.death_med, model.death_gr, model.death_mv)
+    if agent.days_infected ≥ model.infection_period
+        if rand() ≤ lgx
+            kill_agent!(agent, model)
+        else
+            agent.status = :R
+            agent.days_infected = 0
+        end
+    end
+end
+
+
+
+# anim = @animate for i in 0:250
+#     i > 0 && step!(model, agent_step!, 1)
+#     p1 = plotabm(model; ac = infected_fraction, plotargs...)
+#     title!(p1, "Day $(i)")
+# end
+#
+# gif(anim, "doomer_evolution.gif", fps = 10)
+
+susceptible(x) = count(i == :S for i in x)
+exposed(x) = count(i == :E for i in x)
+infected(x) = count(i == :I for i in x)
+recovered(x) = count(i == :R for i in x)
+
+to_collect = [(:status, f) for f in (infected, exposed, recovered, length)]
+data, _ = run!(model, agent_step!, 250; adata = to_collect)
+
+N = sum(model.Ns) # Total initial population
+x = data.step
+p = plot(
+    x,
+    log10.(data[:, aggname(:status, infected)]),
+    label = "infected",
+    xlabel = "steps",
+    ylabel = "log(count)",
+    legend = :bottomleft
+)
+plot!(p, x, log10.(data[:, aggname(:status, exposed)]), label = "exposed")
+plot!(p, x, log10.(data[:, aggname(:status, recovered)]), label = "recovered")
+dead = log10.(N .- data[:, aggname(:status, length)])
+plot!(p, x, dead, label = "dead")
