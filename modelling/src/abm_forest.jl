@@ -77,4 +77,4 @@ anim = @animate for i in 0:step:(step * frames)
     title!(p1, "step $(i)")
 end
 
-gif(anim, "gnp_forest.gif", fps = 15)
+gif(anim, "fire_forest.gif", fps = 15)
