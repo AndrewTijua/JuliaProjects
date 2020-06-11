@@ -19,8 +19,9 @@ OpinionAgent(id; old_o, new_o, pre_o, p_eps) = OpinionAgent(id, old_o, new_o, pr
 function opinion_model(; numagents = 100, ϵ = 0.2)
     model = ABM(OpinionAgent, scheduler = fastest, properties = Dict(:ϵ => ϵ))
     peps_dist = truncated(Normal(ϵ, sqrt(ϵ)), 0., 1.)
+    opin_dist = truncated(Normal(0.5, 0.35), 0., 1.)
     for i in 1:numagents
-        opinion = rand()
+        opinion = rand(opin_dist)
         p_eps = rand(peps_dist)
         add_agent!(model, opinion, opinion, -1., p_eps)
     end
@@ -35,7 +36,7 @@ end
 
 function agent_step!(agent, model)
     agent.pre_o = agent.old_o
-    agent.new_o = mean(boundfilter(agent, model))
+    agent.new_o = (0.85*agent.pre_o + 0.15*mean(boundfilter(agent, model)))
 end
 
 function model_step!(model)
@@ -46,7 +47,7 @@ end
 
 function terminate(model, s)
     if any(
-        !isapprox(a.pre_o, a.new_o; rtol = 1e-12) for a in allagents(model)
+        !isapprox(a.pre_o, a.new_o; rtol = 1e-4) for a in allagents(model)
     )
         return false
     else
@@ -70,6 +71,6 @@ plotsim(data, ϵ) = plot(
     title = "ϵ = $(ϵ)")
 
 plt001, plt015, plt03 =
-    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.05, 0.15, 0.3])
+    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.15, 0.20, 0.3])
 
 plot(plt001, plt015, plt03, layout = (3, 1))

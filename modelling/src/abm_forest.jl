@@ -65,12 +65,16 @@ step!(forest, dummystep, forest_step!, 1)
 # data, _ = run!(forest, dummystep, forest_step!, 10; adata = adata)
 # data
 
-forest = model_init(f = 0.0005, p = 0.001, seed = 3, d = 0.5, griddims = (100, 100))
+gd = (50, 50)
+step = 10
+frames = 150
+
+forest = model_init(f = 0.0005, p = 0.001, seed = 30, d = 0.2, griddims = gd)
 step!(forest, dummystep, forest_step!, 100)
-anim = @animate for i in 0:10:1500
-    i > 0 && step!(forest, dummystep, forest_step!, 10)
-    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, 100), ylims = (0, 100))
+anim = @animate for i in 0:step:(step * frames)
+    i > 0 && step!(forest, dummystep, forest_step!, step)
+    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, gd[1]+1), ylims = (0, gd[2]+1))
     title!(p1, "step $(i)")
 end
 
-gif(anim, "np_forest.gif", fps = 15)
+gif(anim, "gnp_forest.gif", fps = 15)

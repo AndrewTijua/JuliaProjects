@@ -21,18 +21,18 @@ n_bodies = size(bodies_list, 1)
 pos_array = Array{Vector{Float64},2}(undef, n_steps, n_bodies)
 sysenergy = Vector{Float64}(undef, n_steps)
 
-Threads.@threads for body in bodies_list
+for body in bodies_list
     force_update!(body, bodies_list, G_km)
 end
 
 for step = 1:n_steps
     sysenergy[step] = 0
     force_update_list!(bodies_list, G_km)
-    Threads.@threads for body in bodies_list
+    for body in bodies_list
         #force_update!(body, bodies_list, G_km)
         velocity_update!(body)
     end
-    Threads.@threads for body in bodies_list
+    for body in bodies_list
         position_update!(body)
         pos_array[step, body.number] = body.position
     end
