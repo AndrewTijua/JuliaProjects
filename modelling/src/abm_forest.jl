@@ -69,11 +69,11 @@ gd = (50, 50)
 step = 10
 frames = 150
 
-forest = model_init(f = 0.0005, p = 0.001, seed = 30, d = 0.2, griddims = gd)
+forest = model_init(f = 0.00005, p = 0.001, seed = 30, d = 0.2, griddims = gd)
 step!(forest, dummystep, forest_step!, 100)
 anim = @animate for i in 0:step:(step * frames)
     i > 0 && step!(forest, dummystep, forest_step!, step)
-    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, gd[1]+1), ylims = (0, gd[2]+1))
+    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, gd[1]+1), ylims = (0, gd[2]+1), size = (780, 780))
     title!(p1, "step $(i)")
 end
 
