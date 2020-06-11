@@ -1,10 +1,11 @@
 using Agents
-using Plots; gr()
+using Plots;
+gr();
 using AgentsPlots
 
 mutable struct WealthAgent <: AbstractAgent
     id::Int64
-    pos::NTuple{2, Int64}
+    pos::NTuple{2,Int64}
     wealth::Int64
 end
 
@@ -13,7 +14,7 @@ WealthAgent(id, pos; wealth) = WealthAgent(id, pos, wealth)
 function wealth_model_2D(; dims = (20, 20), wealth = 1, M = 1000)
     space = GridSpace(dims, periodic = false)
     model = ABM(WealthAgent, space; scheduler = random_activation)
-    for I in 1:M
+    for I = 1:M
         add_agent!(model, wealth)
     end
     return model
@@ -39,7 +40,7 @@ init_wealth = 4
 model = wealth_model_2D(; wealth = init_wealth)
 adata = [:wealth, :pos]
 data, _ = run!(model, agent_step!, 10; adata = adata, when = [1, 5, 9])
-data[(end - 20):end, :]
+data[(end-20):end, :]
 
 
 function wealth_distr(data, model, n)

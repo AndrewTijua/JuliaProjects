@@ -3,7 +3,6 @@ using Plots
 plotlyjs()
 using Statistics
 using Random
-using StaticArrays
 using Distributions
 
 mutable struct OpinionAgent <: AbstractAgent
@@ -68,9 +67,9 @@ plotsim(data, ϵ) = plot(
     data.new_o,
     leg = false,
     group = data.id,
-    title = "ϵ = $(ϵ)", ylims = (0,1))
+    title = "E(ϵ) = $(ϵ)", ylims = (0,1))
 
 plt1, plt2, plt3, plt4 =
-    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.10, 0.15, 0.20, 0.3])
+    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.10, 0.15, 0.20, 0.30])
 
 plot(plt1, plt2, plt3, plt4, layout = (4, 1))

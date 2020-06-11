@@ -33,7 +33,9 @@ function forest_step!(forest)
             rand() <= forest.p && add_agent!(node, forest, true, forest.h)
         else
             tree = forest[contents[1]]
-            if tree.status == false
+            if tree.status == true
+                tree.health = tree.health + 0.1*rand()
+            elseif tree.status == false
                 tree.health = tree.health - rand()
             end
             if tree.health <= 0
