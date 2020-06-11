@@ -66,7 +66,7 @@ step!(forest, dummystep, forest_step!, 1)
 # data, _ = run!(forest, dummystep, forest_step!, 10; adata = adata)
 # data
 
-gd = (50, 50)
+gd = (100, 100)
 step = 10
 frames = 150
 

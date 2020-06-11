@@ -1,5 +1,5 @@
 using DifferentialEquations, ParameterizedFunctions, Plots
-
+plotlyjs()
 lorenz = @ode_def begin
     dx = σ * (y - x)
     dy = x * (ρ - z) - y

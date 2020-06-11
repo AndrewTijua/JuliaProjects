@@ -232,8 +232,6 @@ function recover_or_die!(agent, model)
     end
 end
 
-
-
 # anim = @animate for i in 0:250
 #     i > 0 && step!(model, agent_step!, 1)
 #     p1 = plotabm(model; ac = infected_fraction, plotargs...)
