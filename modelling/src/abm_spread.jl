@@ -89,10 +89,10 @@ function model_initialisation(;
     return model
 end
 
-function generate_cities_params(;C::Int64, max_travel_rate::Float64, citynum::Int64, citymult = 5)
+function generate_cities_params(; C::Int64, max_travel_rate::Float64, citynum::Int64, citymult = 5)
     pop_dist = 500:5000
     Ns = floor.(Int64, rand(pop_dist, C))
-    for c in 1:citynum
+    for c = 1:citynum
         Ns[end-c] = citymult * rand(1000:5000)
     end
     β_und = rand(0.3:0.04:1.2, C)
@@ -107,12 +107,7 @@ function generate_cities_params(;C::Int64, max_travel_rate::Float64, citynum::In
     m_rates = (m_rates .* max_travel_rate) ./ maxM
     m_rates[diagind(m_rates)] .= 1.0
 
-    city_params = @dict(
-    C,
-    Ns,
-    β_und,
-    β_det,
-    m_rates)
+    city_params = @dict(C, Ns, β_und, β_det, m_rates)
 
     return city_params
 end
@@ -137,24 +132,8 @@ b_age = 40 / 30^2
 Is = [zeros(Int64, length(Ns) - 1)..., 100]
 iso_prob = 0.8
 
-params = @dict(
-Ns,
-β_und,
-β_det,
-m_rates,
-Λ,
-infection_period,
-reinfection_prob,
-detection_time,
-death_med,
-death_gr,
-death_mv,
-seed,
-a_age,
-b_age,
-Is,
-iso_prob,
-)
+params =
+    @dict(Ns, β_und, β_det, m_rates, Λ, infection_period, reinfection_prob, detection_time, death_med, death_gr, death_mv, seed, a_age, b_age, Is, iso_prob,)
 
 model = model_initialisation(; params...)
 
@@ -163,7 +142,7 @@ using AgentsPlots
 plotargs = (node_size = 0.2, method = :circular, linealpha = 0.4)
 g = model.space.graph
 edgewidthsdict = Dict()
-for node in 1:nv(g)
+for node = 1:nv(g)
     nbs = neighbors(g, node)
     for nb in nbs
         edgewidthsdict[(node, nb)] = params[:m_rates][node, nb]
@@ -171,7 +150,7 @@ for node in 1:nv(g)
 end
 edgewidthsf(s, d, w) = edgewidthsdict[(s, d)] * 250
 plotargs = merge(plotargs, (edgewidth = edgewidthsf,))
-infected_fraction(x) = cgrad(:inferno)[(count(a.status != :S for a in x) / length(x))]
+infected_fraction(x) = cgrad(:inferno)[(count(a.status != :S for a in x)/length(x))]
 plotabm(model; ac = infected_fraction, plotargs...)
 
 function agent_step!(agent, model)
@@ -239,7 +218,7 @@ function update!(agent, model)
     end
 end
 
-logit(x, x₀, k, L) = L / (1+exp(-k * (x - x₀)))
+logit(x, x₀, k, L) = L / (1 + exp(-k * (x - x₀)))
 
 function recover_or_die!(agent, model)
     lgx = logit(agent.age, model.death_med, model.death_gr, model.death_mv)
@@ -273,14 +252,7 @@ data, _ = run!(model, agent_step!, 250; adata = to_collect)
 
 N = sum(model.Ns) # Total initial population
 x = data.step
-p = plot(
-    x,
-    log10.(data[:, aggname(:status, infected)]),
-    label = "infected",
-    xlabel = "steps",
-    ylabel = "log(count)",
-    legend = :bottomleft
-)
+p = plot(x, log10.(data[:, aggname(:status, infected)]), label = "infected", xlabel = "steps", ylabel = "log(count)", legend = :bottomleft)
 plot!(p, x, log10.(data[:, aggname(:status, exposed)]), label = "exposed")
 plot!(p, x, log10.(data[:, aggname(:status, recovered)]), label = "recovered")
 dead = log10.(N .- data[:, aggname(:status, length)])

@@ -68,9 +68,9 @@ plotsim(data, ϵ) = plot(
     data.new_o,
     leg = false,
     group = data.id,
-    title = "ϵ = $(ϵ)")
+    title = "ϵ = $(ϵ)", ylims = (0,1))
 
-plt001, plt015, plt03 =
-    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.15, 0.20, 0.3])
+plt1, plt2, plt3, plt4 =
+    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.10, 0.15, 0.20, 0.3])
 
-plot(plt001, plt015, plt03, layout = (3, 1))
+plot(plt1, plt2, plt3, plt4, layout = (4, 1))

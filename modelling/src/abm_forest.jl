@@ -1,17 +1,18 @@
 using Agents, Random
-using Plots; gr()
+using Plots;
+gr();
 using AgentsPlots
 
 mutable struct Tree <: AbstractAgent
     id::Int64
-    pos::Tuple{Int64, Int64}
+    pos::Tuple{Int64,Int64}
     status::Bool #true if not burning, false if burning
     health::Float64 #decrease a random amount when burning
 end
 
 tree(id, pos; status, health) = tree(id, pos, status, health)
 
-function model_init(;f = 0.02, d = 0.8, p = 0.01, griddims = (100, 100), seed = 1, health = 2.0)
+function model_init(; f = 0.02, d = 0.8, p = 0.01, griddims = (100, 100), seed = 1, health = 2.0)
     Random.seed!(seed)
     space = GridSpace(griddims, moore = true)
     properties = Dict(:f => f, :d => d, :p => p, :h => health)
@@ -24,8 +25,6 @@ function model_init(;f = 0.02, d = 0.8, p = 0.01, griddims = (100, 100), seed = 
     end
     return forest
 end
-
-
 
 function forest_step!(forest)
     for node in nodes(forest, by = :id)
@@ -71,9 +70,9 @@ frames = 150
 
 forest = model_init(f = 0.00005, p = 0.001, seed = 30, d = 0.2, griddims = gd)
 step!(forest, dummystep, forest_step!, 100)
-anim = @animate for i in 0:step:(step * frames)
+anim = @animate for i = 0:step:(step*frames)
     i > 0 && step!(forest, dummystep, forest_step!, step)
-    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, gd[1]+1), ylims = (0, gd[2]+1), size = (780, 780))
+    p1 = plotabm(forest; ac = treecolor, ms = 6, msw = 0, xlims = (0, gd[1] + 1), ylims = (0, gd[2] + 1), size = (780, 780))
     title!(p1, "step $(i)")
 end
 
