@@ -4,6 +4,7 @@ plotlyjs()
 using Statistics
 using Random
 using Distributions
+using Measures
 
 mutable struct OpinionAgent <: AbstractAgent
     id::Int
@@ -17,12 +18,12 @@ OpinionAgent(id; old_o, new_o, pre_o, p_eps) = OpinionAgent(id, old_o, new_o, pr
 
 function opinion_model(; numagents = 100, ϵ = 0.2)
     model = ABM(OpinionAgent, scheduler = fastest, properties = Dict(:ϵ => ϵ))
-    peps_dist = truncated(Normal(ϵ, sqrt(ϵ)), 0., 1.)
-    opin_dist = truncated(Normal(0.5, 0.35), 0., 1.)
-    for i in 1:numagents
+    peps_dist = truncated(Normal(ϵ, sqrt(ϵ)), 0.0, 1.0)
+    opin_dist = truncated(Normal(0.5, 0.35), 0.0, 1.0)
+    for i = 1:numagents
         opinion = rand(opin_dist)
         p_eps = rand(peps_dist)
-        add_agent!(model, opinion, opinion, -1., p_eps)
+        add_agent!(model, opinion, opinion, -1.0, p_eps)
     end
     return model
 end
@@ -30,12 +31,12 @@ end
 model = opinion_model()
 
 function boundfilter(agent, model)
-    filter(j -> abs(agent.old_o - j) < model.ϵ, [a.old_o for a in allagents(model)],)
+    filter(j -> abs(agent.old_o - j) < model.ϵ, [a.old_o for a in allagents(model)])
 end
 
 function agent_step!(agent, model)
     agent.pre_o = agent.old_o
-    agent.new_o = (0.85*agent.pre_o + 0.15*mean(boundfilter(agent, model)))
+    agent.new_o = (0.85 * agent.pre_o + 0.15 * mean(boundfilter(agent, model)))
 end
 
 function model_step!(model)
@@ -45,9 +46,7 @@ function model_step!(model)
 end
 
 function terminate(model, s)
-    if any(
-        !isapprox(a.pre_o, a.new_o; rtol = 1e-4) for a in allagents(model)
-    )
+    if any(!isapprox(a.pre_o, a.new_o; rtol = 1e-4) for a in allagents(model))
         return false
     else
         return true
@@ -62,14 +61,8 @@ end
 
 #k = model_run(ϵ = 0.14)
 
-plotsim(data, ϵ) = plot(
-    data.step,
-    data.new_o,
-    leg = false,
-    group = data.id,
-    title = "E(ϵ) = $(ϵ)", ylims = (0,1))
+plotsim(data, ϵ) = plot(data.step, data.new_o, leg = false, group = data.id, title = "E(ϵ) = $(ϵ)", ylims = (0, 1), xlims = (0, Inf))
 
-plt1, plt2, plt3, plt4 =
-    map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.10, 0.15, 0.20, 0.30])
+plt1, plt2, plt3, plt4 = map(e -> (model_run(ϵ = e), e) |> t -> plotsim(t[1], t[2]), [0.10, 0.15, 0.20, 0.30])
 
-plot(plt1, plt2, plt3, plt4, layout = (4, 1))
+plot(plt1, plt2, plt3, plt4, layout = (4, 1), margin = 3mm)
